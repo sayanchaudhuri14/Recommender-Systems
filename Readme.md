@@ -1,6 +1,6 @@
 ## Recommendation Systems
 
-use the movielens data set from here:
+Use the movielens data set from here:
 
 https://grouplens.org/datasets/movielens/latest/.
 
