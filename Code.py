@@ -198,3 +198,45 @@ plt.title('Time Taken vs Number of Latent Factors Comparison ')
 plt.xlabel("Number of Latent Factors")
 plt.ylabel("Time Taken in Sec")
 plt.legend()
+
+
+
+# ## PQ Decompisition
+
+
+def my_PQ( indicator , matrix, P , Q , K,  iters = 500 ,eta = 0.002 , lmbda = 0.02):
+    Q = Q.T
+    nz = np.argwhere(indicator!=0)
+    for step in range(iters):
+        e=0
+        for i,j in nz:   
+            eij = matrix[i][j] - np.dot(P[i,:],Q[:,j])
+            for k in range(K):
+                P[i][k] = P[i][k] + eta * (2 * eij * Q[k][j] - 2*lmbda * P[i][k])
+                Q[k][j] = Q[k][j] + eta * (2 * eij * P[i][k] - 2*lmbda * Q[k][j])
+        e += np.square(matrix[i][j] - np.dot(P[i,:],Q[:,j]))
+        for k in range(K):
+            e = e + (lmbda)*(np.square(P[i][k]) + np.square(Q[k][j]))
+        if step%10==0:
+            print(f'iteration = {step}; error={e}')
+        if e<0.10:
+            break
+    return P, Q.T
+
+
+
+
+N = len(train_matrix)    # N: num of User
+M = len(train_matrix[0]) # M: num of Movie
+K = 5              # Num of Features
+
+P = np.random.rand(N,K)
+Q = np.random.rand(M,K)
+
+ratings_provided = np.argwhere(indicator!=0)
+all_ids = np.arange(ratings_provided.shape[0])
+    
+nP, nQ = my_PQ( train_indicator , train_matrix, P , Q , K,  iters = 100 ,eta = 0.002,lmbda = 0.02 )
+
+nR = np.dot(nP, nQ.T)
+np.mean(np.square(train_matrix[train_indicator==1]-(nP@nQ.T)[train_indicator==1]))
